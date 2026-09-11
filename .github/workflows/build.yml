@@ -1,0 +1,40 @@
+name: Build libadofai_mod.so
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK (CMake 常需)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android NDK r27d
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27d
+          # 自动设置 ANDROID_NDK_HOME 和 NDK_ROOT
+
+      - name: Ensure build.sh executable
+        run: chmod +x build.sh
+
+      - name: Run build.sh
+        run: ./build.sh
+
+      - name: Upload .so artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libadofai_mod-arm64-v8a
+          # 脚本最后拷贝到了根目录，同时保留 build 目录兜底
+          path: |
+            libadofai_mod.so
+            build-android/lib/arm64-v8a/libadofai_mod.so
